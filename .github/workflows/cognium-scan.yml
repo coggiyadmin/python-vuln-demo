@@ -140,12 +140,16 @@ jobs:
           # ── quality breakdown ─────────────────────────────────────────────────
           QUAL_ROWS=$(python3 - <<'PY'
           import json
+          # test-coverage always returns 85 as a default when no test files exist — skip it
+          SKIP = {'test-coverage'}
           try:
             d = json.load(open('quality.json'))
-            for p in d.get('passResults',[])[:6]:
-              sc = p.get('score',0)
+            for p in d.get('passResults', []):
+              if p.get('pass') in SKIP:
+                continue
+              sc = p.get('score', 0)
               bar = '🟢' if sc >= 80 else ('🟡' if sc >= 50 else '🔴')
-              name = p.get('pass','?').replace('-',' ').title()
+              name = p.get('pass', '?').replace('-', ' ').title()
               print(f'| {name} | {bar} {sc} |')
           except: pass
           PY
