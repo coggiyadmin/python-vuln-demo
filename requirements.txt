@@ -1,0 +1,39 @@
+# DEMO — intentional supply-chain vulnerabilities for security scanner showcase
+# All packages pinned to versions with known high/critical CVEs
+
+# SUPPLY CHAIN — CVE-2018-1000656: Flask < 0.12.3 — open redirect / arbitrary code via debugger
+Flask==0.12.2
+
+# SUPPLY CHAIN — CVE-2019-7164 / CVE-2019-7548: SQLAlchemy 1.2 — SQL injection via order_by
+SQLAlchemy==1.2.0
+
+# SUPPLY CHAIN — CVE-2019-10906: Jinja2 < 2.10.1 — sandbox escape
+Jinja2==2.10
+
+# SUPPLY CHAIN — CVE-2019-19274/19275: Pillow < 6.2.2 — buffer overflow, DoS
+Pillow==6.2.0
+
+# SUPPLY CHAIN — CVE-2018-18074: requests < 2.20.0 — credential leak via HTTP redirect
+requests==2.18.0
+
+# SUPPLY CHAIN — CVE-2017-18342: PyYAML < 4.1 — arbitrary code execution via yaml.load()
+PyYAML==3.12
+
+# SUPPLY CHAIN — CVE-2018-10903: cryptography < 2.1.4 — Bleichenbacher timing oracle
+cryptography==2.1.4
+
+# SUPPLY CHAIN — CVE-2019-14234: Django 2.0 — SQL injection via key transform lookup
+Django==2.0.0
+
+# SUPPLY CHAIN — CVE-2018-19787: lxml < 4.2.5 — XSS via SVG
+lxml==3.7.3
+
+# SUPPLY CHAIN — CVE-2018-7750: paramiko < 2.4.1 — authentication bypass
+paramiko==2.3.1
+
+# TYPOSQUAT EXAMPLES (documented; do not install):
+# colourama   — typosquat of colorama        (documented 2018 PyPI attack, exfiltrates data)
+# python-dateutil — sometimes typosquatted as python-datetutil (double-t)
+# reqests      — typosquat of requests        (character transposition)
+# djano        — typosquat of django          (letter drop)
+# flassk       — typosquat of flask           (double-s)
