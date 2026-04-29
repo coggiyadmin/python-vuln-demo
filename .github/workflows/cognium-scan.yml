@@ -9,7 +9,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  security-events: write   # for SARIF upload to Security tab
+  security-events: write
 
 jobs:
   cognium:
@@ -23,25 +23,29 @@ jobs:
       - name: Install cognium-ai
         run: npm install -g cognium-ai
 
-      # ── run all three passes ────────────────────────────────────────────────
-      - name: Scan — SAST findings
+      # ── scans ──────────────────────────────────────────────────────────────
+      - name: SAST scan (summary)
         run: cognium-ai scan . -f summary -o scan-summary.txt
         continue-on-error: true
 
-      - name: Scan — SARIF (Security tab)
+      - name: SAST scan (SARIF → Security tab)
         run: cognium-ai scan . -f sarif -o cognium.sarif
         continue-on-error: true
 
-      - name: Trust — supply-chain + all 27 passes
-        run: cognium-ai trust . -f summary -o trust-summary.txt
+      - name: Trust score
+        run: cognium-ai trust . -f json -o trust.json
         continue-on-error: true
 
-      - name: Secrets — credential detection
+      - name: Quality score
+        run: cognium-ai quality . -f json -o quality.json
+        continue-on-error: true
+
+      - name: Secrets scan
         run: cognium-ai secrets . -f json -o secrets.json
         continue-on-error: true
 
-      # ── upload SARIF to GitHub Security tab ────────────────────────────────
-      - name: Upload SARIF to GitHub Security tab
+      # ── upload SARIF ────────────────────────────────────────────────────────
+      - name: Upload SARIF to Security tab
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
@@ -49,151 +53,215 @@ jobs:
           category: cognium-sast
         continue-on-error: true
 
-      # ── build the PR comment ───────────────────────────────────────────────
+      # ── build PR comment ────────────────────────────────────────────────────
       - name: Build PR comment
         if: github.event_name == 'pull_request'
-        id: comment
         run: |
-          # ── helpers ──────────────────────────────────────────────────────────
-          extract() { grep -m1 "$1" "$2" | grep -oE '[0-9]+(\.[0-9]+)?' | head -1 || echo 0; }
+          # ── parse scan ────────────────────────────────────────────────────────
+          num() { grep -m1 "$1" "${2:-scan-summary.txt}" | grep -oE '[0-9]+' | head -1 || echo 0; }
+          TOTAL=$(num 'Total findings:'); CRIT=$(num 'Critical:')
+          HIGH=$(num 'High:'); MED=$(num 'Medium:'); LOW=$(num 'Low:')
 
-          TOTAL=$(extract 'Total findings:' scan-summary.txt)
-          CRIT=$(extract  'Critical:'       scan-summary.txt)
-          HIGH=$(extract  'High:'           scan-summary.txt)
-          MED=$(extract   'Medium:'         scan-summary.txt)
-          LOW=$(extract   'Low:'            scan-summary.txt)
+          # ── parse trust ───────────────────────────────────────────────────────
+          TRUST=$(python3 -c "import json,sys; d=json.load(open('trust.json')); print(round(d['score'],1))" 2>/dev/null || echo '??')
+          TIER=$(python3  -c "import json,sys; d=json.load(open('trust.json')); print(d['tier'])"         2>/dev/null || echo '??')
 
-          TRUST=$(grep -m1 'Score:' trust-summary.txt | grep -oE '[0-9]+\.[0-9]+' | head -1 || echo '??')
-          TIER=$(grep -m1  'Tier:'  trust-summary.txt | sed 's/.*Tier: //' | tr -d '[]' || echo '??')
+          # ── parse quality ─────────────────────────────────────────────────────
+          QUAL=$(python3  -c "import json,sys; d=json.load(open('quality.json')); print(d['score'])"      2>/dev/null || echo '??')
+          QTIER=$(python3 -c "import json,sys; d=json.load(open('quality.json')); print(d['tier'])"       2>/dev/null || echo '??')
 
+          # ── parse secrets ─────────────────────────────────────────────────────
           SEC_TOTAL=$(grep -m1 '"activeSecrets"' secrets.json | grep -oE '[0-9]+' || echo 0)
-          SEC_CRIT=$(grep  -A4 '"bySeverity"' secrets.json | grep '"critical"' | grep -oE '[0-9]+' || echo 0)
+          SEC_CRIT=$(grep -A4  '"bySeverity"'   secrets.json | grep '"critical"' | grep -oE '[0-9]+' || echo 0)
 
-          # ── tier icon ────────────────────────────────────────────────────────
-          if   [ "$TIER" = "TRUSTED"  ]; then TIER_ICON="✅"
-          elif [ "$TIER" = "VERIFIED" ]; then TIER_ICON="🟡"
-          else TIER_ICON="🔴"; fi
+          # ── badge colours (shields.io) ────────────────────────────────────────
+          trust_int=${TRUST%%.*}
+          qual_int=${QUAL}
+          if   [ "${trust_int:-0}" -ge 90 ] 2>/dev/null; then TRUST_COLOR=brightgreen
+          elif [ "${trust_int:-0}" -ge 70 ] 2>/dev/null; then TRUST_COLOR=yellow
+          else TRUST_COLOR=red; fi
 
-          # ── severity icons ───────────────────────────────────────────────────
-          crit_icon() { [ "$1" -gt 0 ] && echo "🔴 $1" || echo "✅ 0"; }
-          high_icon() { [ "$1" -gt 0 ] && echo "🟠 $1" || echo "✅ 0"; }
+          if   [ "${qual_int:-0}" -ge 80 ] 2>/dev/null; then QUAL_COLOR=brightgreen
+          elif [ "${qual_int:-0}" -ge 60 ] 2>/dev/null; then QUAL_COLOR=yellow
+          else QUAL_COLOR=red; fi
 
-          # ── top findings ─────────────────────────────────────────────────────
-          TOP_FINDINGS=$(grep -E '🔴|🟠' scan-summary.txt | head -10 | \
-            sed 's/🔴/- 🔴/;s/🟠/- 🟠/' || echo "- none at critical/high")
+          case "$TIER" in
+            TRUSTED)  TIER_COLOR=brightgreen; TIER_ICON="✅" ;;
+            VERIFIED) TIER_COLOR=yellow;      TIER_ICON="🟡" ;;
+            *)        TIER_COLOR=red;         TIER_ICON="🔴" ;;
+          esac
 
-          # ── trust components ──────────────────────────────────────────────────
-          TRUST_COMPONENTS=$(grep -E 'Vulnerability:|Supply Chain:|Exfiltration:|Instructions:|Permissions:|Secrets:' \
-            trust-summary.txt | sed 's/^[[:space:]]*/  /' | head -12)
+          case "$QTIER" in
+            EXCELLENT|GOOD) QTIER_ICON="✅" ;;
+            FAIR)           QTIER_ICON="🟡" ;;
+            *)              QTIER_ICON="🔴" ;;
+          esac
+
+          # URL-encode slashes in score labels
+          TRUST_LABEL=$(echo "${TRUST}%2F100" | sed 's/ /%20/g')
+          QUAL_LABEL=$(echo "${QUAL}%2F100"   | sed 's/ /%20/g')
+
+          TRUST_BADGE="https://img.shields.io/badge/Trust_Score-${TRUST_LABEL}-${TRUST_COLOR}?style=flat-square&logo=shield"
+          QUAL_BADGE="https://img.shields.io/badge/Quality_Score-${QUAL_LABEL}-${QUAL_COLOR}?style=flat-square&logo=checkmarx"
+          TIER_BADGE="https://img.shields.io/badge/Tier-${TIER}-${TIER_COLOR}?style=flat-square"
+
+          # ── severity icons ────────────────────────────────────────────────────
+          crit_icon() { [ "$1" -gt 0 ] && echo "🔴 **$1**" || echo "✅ 0"; }
+          high_icon() { [ "$1" -gt 0 ] && echo "🟠 **$1**" || echo "✅ 0"; }
+
+          # ── top findings ──────────────────────────────────────────────────────
+          TOP_FINDINGS=$(grep -E '🔴|🟠' scan-summary.txt 2>/dev/null | head -10 | \
+            sed 's/^[[:space:]]*/- /' || echo "- none at critical/high severity")
+
+          # ── trust score breakdown ─────────────────────────────────────────────
+          TRUST_ROWS=$(python3 - <<'PY'
+          import json
+          try:
+            d = json.load(open('trust.json'))
+            rows = []
+            comp_map = {
+              'vulnerability':'Vulnerability','supplyChain':'Supply Chain',
+              'exfiltration':'Exfiltration','instructions':'Instructions',
+              'permissions':'Permissions','secrets':'Secrets',
+              'license':'License','compliance':'Compliance','hygiene':'Hygiene'
+            }
+            for k,label in comp_map.items():
+              v = d.get('scoreComponents',{}).get(k)
+              if v is not None:
+                bar = '🟢' if v >= 90 else ('🟡' if v >= 70 else '🔴')
+                rows.append(f'| {label} | {bar} {v} |')
+            print('\n'.join(rows))
+          except: pass
+          PY
+          )
+
+          # ── quality breakdown ─────────────────────────────────────────────────
+          QUAL_ROWS=$(python3 - <<'PY'
+          import json
+          try:
+            d = json.load(open('quality.json'))
+            for p in d.get('passResults',[])[:6]:
+              sc = p.get('score',0)
+              bar = '🟢' if sc >= 80 else ('🟡' if sc >= 50 else '🔴')
+              name = p.get('pass','?').replace('-',' ').title()
+              print(f'| {name} | {bar} {sc} |')
+          except: pass
+          PY
+          )
 
           # ── secrets list ──────────────────────────────────────────────────────
-          SECRET_TYPES=$(grep -oE '"patternName": "[^"]+"' secrets.json | \
+          SECRET_LIST=$(grep -oE '"patternName": "[^"]+"' secrets.json 2>/dev/null | \
             sed 's/"patternName": //;s/"//g' | sort | uniq -c | sort -rn | head -8 | \
-            awk '{printf "  - %s × **%s**\n", $1, $2}' || echo "  none found")
+            awk '{printf "- %s × **%s**\n", $1, $2}' || echo "- none detected")
 
-          # ── trust findings ────────────────────────────────────────────────────
-          TRUST_CRITS=$(grep -A999 'CRIT (' trust-summary.txt | grep '^\s\+- ' | head -6 | \
-            sed 's/^[[:space:]]*/  - /' || echo "  none")
-          TRUST_HIGHS=$(grep -A999 'HIGH (' trust-summary.txt | grep '^\s\+- ' | head -6 | \
-            sed 's/^[[:space:]]*/  - /' || echo "  none")
+          # ── critical trust findings ───────────────────────────────────────────
+          TRUST_CRITS=$(python3 - <<'PY'
+          import json
+          try:
+            d = json.load(open('trust.json'))
+            findings = d.get('findings',[])
+            crits = [f"- {f['message']} `{f.get('file','')}`"
+                     for f in findings if f.get('severity','').upper() == 'CRITICAL'][:6]
+            print('\n'.join(crits) if crits else '- none')
+          except: print('- none')
+          PY
+          )
 
           # ── write comment ─────────────────────────────────────────────────────
           cat > pr-comment.md << COMMENT
+          <!-- cognium-scan-comment -->
           ## 🔐 Cognium Security Scan — \`python-vuln-demo\`
 
-          | Category | Result |
+          [![Trust Score](${TRUST_BADGE})](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) [![Quality Score](${QUAL_BADGE})](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) [![Tier](${TIER_BADGE})](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          | | Result |
           |---|---|
-          | **Trust Score** | \`${TRUST} / 100\` |
-          | **Trust Tier** | ${TIER_ICON} \`${TIER}\` |
+          | **Trust Score** | ${TIER_ICON} \`${TRUST} / 100\` — ${TIER} |
+          | **Quality Score** | ${QTIER_ICON} \`${QUAL} / 100\` — ${QTIER} |
           | **Critical findings** | $(crit_icon $CRIT) |
           | **High findings** | $(high_icon $HIGH) |
-          | **Total findings** | \`${TOTAL}\` (med: ${MED}, low: ${LOW}) |
-          | **Secrets detected** | \`${SEC_TOTAL}\` total, ${SEC_CRIT} critical |
+          | **Total findings** | \`${TOTAL}\` (med: ${MED} · low: ${LOW}) |
+          | **Secrets detected** | \`${SEC_TOTAL}\` total · ${SEC_CRIT} critical |
 
           ---
 
           <details>
-          <summary>🔴 Critical & 🟠 High Findings (SAST)</summary>
+          <summary>🔴 Critical & 🟠 High SAST Findings</summary>
 
           ${TOP_FINDINGS}
 
           </details>
 
           <details>
-          <summary>📊 Trust Score Components</summary>
+          <summary>📊 Trust Score Breakdown</summary>
 
-          \`\`\`
-          ${TRUST_COMPONENTS}
-          \`\`\`
+          | Category | Score |
+          |---|---|
+          ${TRUST_ROWS}
+
+          </details>
+
+          <details>
+          <summary>🧪 Quality Score Breakdown</summary>
+
+          | Pass | Score |
+          |---|---|
+          ${QUAL_ROWS}
 
           </details>
 
           <details>
           <summary>🔑 Secrets Detected</summary>
 
-          ${SECRET_TYPES}
+          ${SECRET_LIST}
 
           </details>
 
           <details>
-          <summary>⚠️ Trust Critical & High Findings</summary>
+          <summary>🚨 Critical Trust Findings</summary>
 
-          **Critical:**
           ${TRUST_CRITS}
-
-          **High:**
-          ${TRUST_HIGHS}
 
           </details>
 
           ---
-          > 📁 Full results: [scan](../actions/runs/${{ github.run_id }}) | [Security tab](../security/code-scanning)
-          > 🤖 Powered by [Cognium](https://cognium.dev)
+          > 📁 [Full run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) · [Security tab](https://github.com/${{ github.repository }}/security/code-scanning) · 🤖 [Cognium](https://cognium.dev)
           COMMENT
 
-          echo "comment_file=pr-comment.md" >> "$GITHUB_OUTPUT"
-
-      # ── post / update comment on PR ────────────────────────────────────────
+      # ── post / update sticky comment ───────────────────────────────────────
       - name: Post PR comment
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const fs   = require('fs');
-            const body = fs.readFileSync('pr-comment.md', 'utf8').replace(/^ {10}/gm, '');
+            const fs     = require('fs');
+            const body   = fs.readFileSync('pr-comment.md', 'utf8').replace(/^ {10}/gm, '');
             const marker = '<!-- cognium-scan-comment -->';
-            const full   = marker + '\n' + body;
 
             const { data: comments } = await github.rest.issues.listComments({
-              owner      : context.repo.owner,
-              repo       : context.repo.repo,
+              owner: context.repo.owner, repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-
             const existing = comments.find(c => c.body.includes(marker));
 
             if (existing) {
               await github.rest.issues.updateComment({
-                owner     : context.repo.owner,
-                repo      : context.repo.repo,
-                comment_id: existing.id,
-                body      : full,
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: existing.id, body,
               });
             } else {
               await github.rest.issues.createComment({
-                owner       : context.repo.owner,
-                repo        : context.repo.repo,
-                issue_number: context.issue.number,
-                body        : full,
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: context.issue.number, body,
               });
             }
 
-      # ── fail CI if critical secrets found ──────────────────────────────────
+      # ── gate: block merge on critical secrets ──────────────────────────────
       - name: Fail if critical secrets detected
         run: |
           CRIT=$(grep -A4 '"bySeverity"' secrets.json | grep '"critical"' | grep -oE '[0-9]+' || echo 0)
           if [ "$CRIT" -gt 0 ]; then
-            echo "❌ $CRIT critical secret(s) found — blocking merge"
+            echo "❌ $CRIT critical secret(s) detected — blocking merge"
             exit 1
           fi
           echo "✅ No critical secrets"
