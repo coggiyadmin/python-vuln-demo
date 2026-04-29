@@ -105,6 +105,17 @@ jobs:
           QUAL_BADGE="https://img.shields.io/badge/Quality_Score-${QUAL_LABEL}-${QUAL_COLOR}?style=flat-square&logo=checkmarx"
           TIER_BADGE="https://img.shields.io/badge/Tier-${TIER}-${TIER_COLOR}?style=flat-square"
 
+          # ── score icon (based on value, not tier) ────────────────────────────
+          trust_int=${TRUST%%.*}
+          if   [ "${trust_int:-0}" -ge 90 ] 2>/dev/null; then TRUST_ICON="🟢"
+          elif [ "${trust_int:-0}" -ge 70 ] 2>/dev/null; then TRUST_ICON="🟡"
+          else TRUST_ICON="🔴"; fi
+
+          qual_int=${QUAL}
+          if   [ "${qual_int:-0}" -ge 80 ] 2>/dev/null; then QUAL_ICON="🟢"
+          elif [ "${qual_int:-0}" -ge 60 ] 2>/dev/null; then QUAL_ICON="🟡"
+          else QUAL_ICON="🔴"; fi
+
           # ── severity icons ────────────────────────────────────────────────────
           crit_icon() { [ "$1" -gt 0 ] && echo "🔴 **$1**" || echo "✅ 0"; }
           high_icon() { [ "$1" -gt 0 ] && echo "🟠 **$1**" || echo "✅ 0"; }
@@ -196,8 +207,9 @@ jobs:
 
           | | Result |
           |---|---|
-          | **Trust Score** | ${TIER_ICON} \`${TRUST} / 100\` — ${TIER} |
-          | **Quality Score** | ${QTIER_ICON} \`${QUAL} / 100\` — ${QTIER} |
+          | **Trust Score** | ${TRUST_ICON} \`${TRUST} / 100\` |
+          | **Trust Tier** | ${TIER_ICON} ${TIER} |
+          | **Quality Score** | ${QUAL_ICON} \`${QUAL} / 100\` — ${QTIER} |
           | **Critical findings** | $(crit_icon $CRIT) |
           | **High findings** | $(high_icon $HIGH) |
           | **Total findings** | \`${TOTAL}\` (med: ${MED} · low: ${LOW}) |
