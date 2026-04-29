@@ -118,18 +118,20 @@ jobs:
           import json
           try:
             d = json.load(open('trust.json'))
+            comp_map = [
+              ('vulnerability_score','Vulnerability'), ('supply_chain_score','Supply Chain'),
+              ('exfiltration_score','Exfiltration'),   ('instruction_score','Instructions'),
+              ('permission_score','Permissions'),       ('secrets_score','Secrets'),
+              ('crypto_score','Crypto'),               ('license_score','License'),
+              ('compliance_score','Compliance'),        ('hygiene_score','Hygiene'),
+              ('poisoning_score','Poisoning'),          ('provenance_score','Provenance'),
+            ]
             rows = []
-            comp_map = {
-              'vulnerability':'Vulnerability','supplyChain':'Supply Chain',
-              'exfiltration':'Exfiltration','instructions':'Instructions',
-              'permissions':'Permissions','secrets':'Secrets',
-              'license':'License','compliance':'Compliance','hygiene':'Hygiene'
-            }
-            for k,label in comp_map.items():
-              v = d.get('scoreComponents',{}).get(k)
+            for key, label in comp_map:
+              v = d.get(key)
               if v is not None:
                 bar = '🟢' if v >= 90 else ('🟡' if v >= 70 else '🔴')
-                rows.append(f'| {label} | {bar} {v} |')
+                rows.append(f'| {label} | {bar} {round(v)} |')
             print('\n'.join(rows))
           except: pass
           PY
@@ -150,19 +152,33 @@ jobs:
           )
 
           # ── secrets list ──────────────────────────────────────────────────────
-          SECRET_LIST=$(grep -oE '"patternName": "[^"]+"' secrets.json 2>/dev/null | \
-            sed 's/"patternName": //;s/"//g' | sort | uniq -c | sort -rn | head -8 | \
-            awk '{printf "- %s × **%s**\n", $1, $2}' || echo "- none detected")
+          SECRET_LIST=$(python3 - <<'PY'
+          import json
+          from collections import Counter
+          try:
+            d = json.load(open('secrets.json'))
+            names = [s['patternName'] for s in d.get('secrets', [])]
+            for name, count in Counter(names).most_common(8):
+              sev = next((s['severity'] for s in d['secrets'] if s['patternName']==name), '')
+              icon = '🔴' if sev=='critical' else ('🟠' if sev=='high' else '🟡')
+              print(f'- {icon} {count} × **{name}**')
+          except: print('- none detected')
+          PY
+          )
 
           # ── critical trust findings ───────────────────────────────────────────
           TRUST_CRITS=$(python3 - <<'PY'
           import json
           try:
             d = json.load(open('trust.json'))
-            findings = d.get('findings',[])
-            crits = [f"- {f['message']} `{f.get('file','')}`"
-                     for f in findings if f.get('severity','').upper() == 'CRITICAL'][:6]
-            print('\n'.join(crits) if crits else '- none')
+            crits = []
+            for pr in d.get('passResults', []):
+              for f in pr.get('findings', []):
+                if f.get('severity','').lower() == 'critical':
+                  loc = f.get('location', {})
+                  file_ref = f"`{loc.get('file','')}:{loc.get('line','')}`" if loc.get('file') else ''
+                  crits.append(f"- {f['message']} {file_ref}")
+            print('\n'.join(crits[:6]) if crits else '- none')
           except: print('- none')
           PY
           )
