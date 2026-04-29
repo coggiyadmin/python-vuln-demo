@@ -14,14 +14,14 @@ permissions:
 jobs:
   cognium:
     name: Security Scan (Python)
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install cognium-ai
-        run: brew install cognium-ai
+        run: npm install -g cognium-ai
 
       # ── run all three passes ────────────────────────────────────────────────
       - name: Scan — SAST findings
