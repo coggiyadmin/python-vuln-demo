@@ -28,15 +28,28 @@ Legend: ✅ detected · ⚠️ rule exists but doesn't fire / under-tested · �
 | HTML attribute issues | 79/1021/353 | `html-*` passes |
 | Trust boundary | 501 | `trust-boundary` |
 
-## B. Rule exists but under-fires / untested ⚠️
-| Category | CWE | Issue |
-|----------|-----|-------|
-| Weak crypto / hash / random | 327/328/330 | #60 (taint-sink model never fires on constant algo) |
-| Insecure cookie | 614 | #45 (doesn't fire for JS/TS) |
-| TLS verification disabled | 295 | #60 (no rule; filed) |
-| External-taint-escape | 668 | barely tested |
-| `html-mixed-content`, `-javascript-uri`, `-form-action-javascript`, `-missing-noopener`, `-missing-sandbox` | — | never positively tested |
-| `cors-null-origin`, `cors-http-origin`, `xfo-csp-mismatch` | 346/1021 | never positively tested |
+## B. Tier-B — verified (permutations run)
+### B1. Confirmed WORKING ✅ (were just untested)
+| Rule | CWE | Result |
+|------|-----|--------|
+| `html-mixed-content` | 311 | ✅ fires |
+| `html-javascript-uri` | 79 | ✅ fires |
+| `html-form-action-javascript` | 79 | ✅ fires |
+| `html-missing-noopener` | 1022 | ✅ fires |
+| `html-missing-sandbox` | 1021 | ✅ fires |
+| `cors-null-origin` | 346 | ✅ fires |
+| `cors-http-origin` | 346 | ✅ fires |
+| `xfo-csp-mismatch` | 1021 | ✅ fires |
+| `x-frame-options-allow-from` | 1021 | ✅ fires |
+| `external-taint-escape` | 668 | ✅ fires (seen in bash) |
+
+### B2. Confirmed DEAD across ALL languages ❌ → consolidated under #60
+Root cause: modeled as **taint sinks** but the vuln is a **constant config / absent flag** → never fires. Should be **pattern passes**.
+| Rule | CWE | Java | Python | JS | Go | Rust |
+|------|-----|------|--------|----|----|----|
+| `weak_hash` / `weak_crypto` / `weak_random` | 327/8/330 | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `insecure_cookie` | 614 | ❌ | ❌ | ❌ | — | — |
+| TLS verification disabled | 295 | — | ❌ | — | ❌ | — |
 
 ## C. No rule — genuine category gaps ❌
 ### SAST-tractable (defect #86 / #87)
