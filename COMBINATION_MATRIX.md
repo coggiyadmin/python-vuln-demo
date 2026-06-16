@@ -22,13 +22,22 @@ non-defect documentation (passing cells, status, blockers).
 | Lang | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
 |------|---|---|---|---|---|---|---|---|---|----|----|----|----|
 | **Python** | ❌74 | ✅ | ✅76 | ✅ | ❌78 | ✅ | ✅ | ❌79 | ✅ | ✅ | ✅ | — | ✅ |
-| **JavaScript** | ✅ | ✅ | ▫️ | ✅77 | ▫️ | ▫️ | ▫️ | ▫️ | ▫️ | ▫️ | ▫️ | ▫️ | ▫️ |
+| **JavaScript** | ✅ | ✅ | ✅ | ✅77 | ❌78 | ✅ | ✅ | ❌79 | ✅ | ✅ | ✅ | ❌80 | ✅ |
 | **TypeScript** | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | — | ⚠️69 |
-| **Java** | ✅ | ▫️ | ▫️ | ▫️ | ❌78 | ▫️ | ▫️ | ▫️ | ▫️ | ▫️ | ▫️ | — | ▫️ |
+| **Java** | ✅ | ✅ | ❌84 | ✅ | ❌78 | ✅ | ✅ | ❌79 | ✅ | ✅ | ✅ | — | ✅ |
 | **Rust** | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ✅* | ⚠️82 | ⚠️82 | — | ⚠️82 |
-| **Go** | ▫️ | ✅ | ✅ | ▫️ | ❌78 | ▫️ | ✅ | ▫️ | ▫️ | ▫️ | ✅ | — | ▫️ |
-| **Bash** | ▫️ | ✅ | ✅ | — | — | ▫️ | ✅ | ▫️ | ✅ | ▫️ | ✅ | — | ▫️ |
+| **Go** | ⚠️§ | ✅ | ✅ | ⚠️§ | ❌78 | ✅ | ✅ | ❌79 | ✅ | ⚠️§ | ✅ | — | ✅ |
+| **Bash** | — | ✅ | ✅ | — | — | ✅ | ✅ | ✅ | ✅ | — | ✅ | — | ✅ |
 | **HTML/htmljs** | — | — | — | — | — | — | — | — | — | — | — | ❌80 | — |
+
+\* Rust #9 trivially clean only because Rust taint is non-functional (#82).
+§ Go #1/#4/#10 confounded by Go's `exec.Command` sink being unreliable (the reliable Go sink is `db.Query`); cross-file/async/test-exclusion couldn't be cleanly isolated — not a confirmed defect.
+
+### Cells confirmed this pass (tiny var-pattern files in each repo's `cells/`)
+- **JS** (eval sink, no `module.exports`): #3✅ #5❌78 #6✅ #7✅ #8❌79 #9✅ #10✅ #11✅ #13✅
+- **Java** (getParameter→executeQuery/exec): #2✅ #3❌84 #4✅ #6✅ #7✅ #9✅ #10✅ #11✅ #13✅
+- **Go** (FormValue→db.Query): #6✅ #9✅ #13✅ (+ earlier #2/#3/#7/#11)
+- **Bash** (\$1/QUERY_STRING→eval): #6✅ #8✅ (+ earlier #2/#3/#7/#9/#11)
 
 ### Key cross-language data points
 - **Cross-file (#1): works in Java ✅ and JS ✅, fails in Python ❌#74** — Python-specific `from-import` resolution gap (same root as #66). Not engine-wide.
