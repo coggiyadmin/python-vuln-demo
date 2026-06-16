@@ -26,12 +26,12 @@ non-defect documentation (passing cells, status, blockers).
 | **TypeScript** | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | — | ⚠️69 |
 | **Java** | ✅ | ✅ | ❌84 | ✅ | ❌78 | ✅ | ✅ | ❌79 | ✅ | ✅ | ✅ | — | ✅ |
 | **Rust** | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ✅* | ⚠️82 | ⚠️82 | — | ⚠️82 |
-| **Go** | ⚠️§ | ✅ | ✅ | ⚠️§ | ❌78 | ✅ | ✅ | ❌79 | ✅ | ⚠️§ | ✅ | — | ✅ |
+| **Go** | ✅ | ✅ | ✅ | ✅ | ❌78 | ✅ | ✅ | ❌79 | ✅ | ❌85 | ✅ | — | ✅ |
 | **Bash** | — | ✅ | ✅ | — | — | ✅ | ✅ | ✅ | ✅ | — | ✅ | — | ✅ |
 | **HTML/htmljs** | — | — | — | — | — | — | — | — | — | — | — | ❌80 | — |
 
 \* Rust #9 trivially clean only because Rust taint is non-functional (#82).
-§ Go #1/#4/#10 confounded by Go's `exec.Command` sink being unreliable (the reliable Go sink is `db.Query`); cross-file/async/test-exclusion couldn't be cleanly isolated — not a confirmed defect.
+Go #1/#4/#10 re-tested with the reliable `db.Query` sink (gocells/): #1 cross-file ✅ WORKS, #4 goroutine ✅ WORKS, #10 `--exclude-tests` ❌ does not suppress `_test.go` (#85).
 
 ### Cells confirmed this pass (tiny var-pattern files in each repo's `cells/`)
 - **JS** (eval sink, no `module.exports`): #3✅ #5❌78 #6✅ #7✅ #8❌79 #9✅ #10✅ #11✅ #13✅
