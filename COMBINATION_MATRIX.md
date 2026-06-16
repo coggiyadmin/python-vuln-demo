@@ -23,7 +23,7 @@ non-defect documentation (passing cells, status, blockers).
 |------|---|---|---|---|---|---|---|---|---|----|----|----|----|
 | **Python** | ❌74 | ✅ | ✅76 | ✅ | ❌78 | ✅ | ✅ | ❌79 | ✅ | ✅ | ✅ | ⚠️54 | ✅ |
 | **JavaScript** | ✅ | ✅ | ✅ | ✅77 | ❌78 | ✅ | ✅ | ❌79 | ✅ | ✅ | ✅ | ❌80/88 | ✅ |
-| **TypeScript** | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | ⚠️69 | — | ⚠️69 |
+| **TypeScript** | ⚠️67 | ⚠️67 | ⚠️67 | ⚠️67 | ⚠️67 | ⚠️67 | ⚠️67 | ⚠️67 | ⚠️67 | ⚠️67 | ⚠️67 | — | ⚠️67 |
 | **Java** | ✅ | ✅ | ❌84 | ✅ | ❌78 | ✅ | ✅ | ❌79 | ✅ | ✅ | ✅ | — | ✅ |
 | **Rust** | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ⚠️82 | ✅* | ⚠️82 | ⚠️82 | — | ⚠️82 |
 | **Go** | ✅ | ✅ | ✅ | ✅ | ❌78 | ✅ | ✅ | ❌79 | ✅ | ❌85 | ✅ | ❌88 | ✅ |
@@ -47,7 +47,7 @@ Go #1/#4/#10 re-tested with the reliable `db.Query` sink (gocells/): #1 cross-fi
 \* Rust #9 (comment/string) is trivially clean only because Rust taint is non-functional (#82) — not a meaningful pass.
 
 ## Systemic blockers (whole-row)
-- **TypeScript — #69**: typed arrow params / `declare` / inline classes / decorators push files into partial-parse (errorCount ≥ 1), silently suppressing findings. The entire TS row cannot be validated until TS parsing is hardened.
+- **TypeScript — #67**: typed arrow params / `declare` / inline classes / decorators push files into partial-parse (errorCount ≥ 1), silently suppressing findings. The entire TS row cannot be validated until TS parsing is hardened.
 - **Rust — #82**: no source (`env::args`, actix extractors #73) reaches any sink (Command/fs/sql). Only regex-based secret detection works. The entire Rust taint row is blocked.
 
 ## Defects found via combination testing
@@ -60,7 +60,7 @@ Go #1/#4/#10 re-tested with the reliable `db.Query` sink (gocells/): #1 cross-fi
 | 8 | #79 | custom sanitizer wrapper not recognized (interproc sanitizer) |
 | 12 | #80 | JS inside HTML `<script>` not taint-analyzed (polyglot) |
 | — | #75 | `express.Router()` handler sources not recognized |
-| — | #69 | TS parse fragility (blocks TS row) |
+| — | #67 | TS parse fragility (blocks TS row) |
 | — | #82 | Rust taint non-functional (blocks Rust row) |
 
 ## Correct / clean cells (no defect — engine behaving well)
