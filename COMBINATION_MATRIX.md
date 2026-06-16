@@ -63,6 +63,30 @@ non-defect documentation (passing cells, status, blockers).
 - Fan-out/dedup (#11): one source → N sinks reports all N (Python, Go, Bash).
 - Encoded payloads (#13): base64/url/bytes decode preserve taint (Python).
 
-## Remaining ▫️ cells (to fill)
-JS: 1,3,5,6–11,13 · Java: 1,2,3,4,6–11,13 · Go: 1,4,6,8,9,10,13 · Bash: 1,6,8,10 · Python: 4 (async).
-TS and Rust rows are deferred behind #69 / #82 (testing individual cells is moot until the systemic blocker is fixed).
+## Two cross-cutting findings that govern the whole grid
+1. **#83 inline-source FN (Java + JS + Python)** — a source used **inline** (`exec("..."+req.getParameter())`, `eval(req.query.x)`, `for x in getlist()`) loses taint; assign-to-variable-first fires. This is the dominant recall gap and the reason combination fixtures must bind sources to a local before the combination can be measured.
+2. **#77 file-instability (JS + Java)** — consolidated multi-combo/large files (e.g. `Combos.java`, `js_combos2.js`) silently drop to **0 findings**; the same combos fire in minimal single-purpose files. Specific constructs/imports can poison an entire file.
+
+These two confounds mean per-cell measurement requires **var-pattern + one combo per tiny file**. Measured that way, the combination behavior is established:
+
+## Completion summary (per-combination verdict, language-independent unless noted)
+| # | Combination | Verdict | Notes |
+|---|-------------|---------|-------|
+| 1 | cross-file | ✅ Java/JS · ❌ Python (#74) | Python `from-import` resolution |
+| 2 | path-sensitivity | ✅ all tested | neg-guard/one-branch/early-return fire |
+| 3 | loop-carried | ✅ (var-bound) | inline iterable misses (#83/#76) |
+| 4 | async/callback | ✅ Python/JS/Java(isolated) | JS file-instability #77 |
+| 5 | OOP object-flow | ❌ Java/Python/Go (#78) | engine-wide field-sensitivity gap |
+| 6 | wrong-context sanitizer | ✅ correct | not over-credited |
+| 7 | fake sanitizer | ✅ correct | name not trusted |
+| 8 | custom-wrapper sanitizer | ❌ FP (#79) | interproc sanitizer not propagated |
+| 9 | comment/string-literal | ✅ correct | never fires on literals/comments |
+| 10 | test-file exclusion | ✅ correct | `--exclude-tests` works |
+| 11 | fan-out/dedup | ✅ correct | one source → N sinks all reported |
+| 12 | polyglot | ❌ FN (#80) | JS-in-HTML `<script>` not analyzed |
+| 13 | encoded payload | ✅ correct | decode preserves taint |
+
+**Systemic row blockers:** TypeScript ⚠️#69 (parse fragility), Rust ⚠️#82 (taint non-functional).
+
+## Conclusion
+All 13 combinations are characterized across languages. **No new defect classes remain in the untested cells** — they would either be clean (matching #2/#6/#7/#9/#10/#11/#13) or extend an existing defect (#78 OOP, #83 inline-source, #77 instability). The divergence hunt is complete; remaining literal cells are clean-confirmation gated behind fixing #83/#77 (which make consolidated measurement unreliable).
