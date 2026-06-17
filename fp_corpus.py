@@ -1,9 +1,8 @@
 """
-ZERO-FP RESEARCH CORPUS — patterns that LOOK tainted but are provably safe.
+ZERO-FP FALSE-POSITIVE CORPUS — patterns that LOOK tainted but are provably safe.
 
 Each handler models a documented hard case for taint analysis. The scanner MUST
-produce ZERO security findings here. Any finding is a FALSE POSITIVE — our
-product's #1 USP is zero FP.
+produce ZERO security findings here. Any finding is a FALSE POSITIVE.
 
 Categories:
   1. Type-cast sanitization   — int(...) / uuid can't carry injection

@@ -1,5 +1,5 @@
 """
-DEMO FILE — intentional vulnerabilities modelled on famous real-world CVE classes.
+DEMO FILE — intentional vulnerabilities for security scanner showcase.
 
 CVE classes covered:
   CWE-1336 / SSTI    Jinja2 server-side template injection (render_template_string)

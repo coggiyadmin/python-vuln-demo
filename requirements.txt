@@ -31,8 +31,11 @@ lxml==3.7.3
 # SUPPLY CHAIN — CVE-2018-7750: paramiko < 2.4.1 — authentication bypass
 paramiko==2.3.1
 
+# SUPPLY CHAIN — Dulwich < 1.2.5 — git path traversal
+dulwich==0.21.6
+
 # TYPOSQUAT EXAMPLES (documented; do not install):
-# colourama   — typosquat of colorama        (documented 2018 PyPI attack, exfiltrates data)
+# colourama   — typosquat of colorama
 # python-dateutil — sometimes typosquatted as python-datetutil (double-t)
 # reqests      — typosquat of requests        (character transposition)
 # djano        — typosquat of django          (letter drop)
