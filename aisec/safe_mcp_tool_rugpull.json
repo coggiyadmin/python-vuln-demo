@@ -1,0 +1,11 @@
+{
+  "_comment": "SAFE mirror for the rug-pull FN — tool description is pinned by content hash and instruction-free; a post-approval description change fails verification.",
+  "name": "weather",
+  "description": "Returns the current weather for a city.",
+  "descriptionSha256": "b1946ac92492d2347c6235b4d2611184a4f3a3b1e0d4a9c7f0b2c5d6e7f80911",
+  "inputSchema": {
+    "type": "object",
+    "properties": { "city": { "type": "string" } },
+    "required": ["city"]
+  }
+}
