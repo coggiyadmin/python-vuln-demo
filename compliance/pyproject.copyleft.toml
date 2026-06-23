@@ -1,0 +1,7 @@
+# License risk (SPDX) — copyleft dependency in a distributed package.
+[project]
+name = "app"
+license = { text = "MIT" }
+dependencies = ["gpl-reporting>=2.0"]  # GPL-3.0-only — copyleft, viral for distribution
+[tool._resolved_licenses]
+gpl-reporting = "GPL-3.0-only"
