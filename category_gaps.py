@@ -16,12 +16,9 @@ app = Flask(__name__)
 log = logging.getLogger("app")
 
 
-# CWE-352 — CSRF: state-changing POST with no token / SameSite protection
-@app.route("/transfer", methods=["POST"])
-def transfer():
-    to = request.form["to"]; amt = request.form["amount"]
-    # no CSRF token validated, no SameSite cookie — cross-site forgeable
-    return jsonify({"transferred": amt, "to": to})
+# CWE-352 CSRF graduated to csrf_probe.py + safe_csrf.py (FN-16)
+# CWE-434 unrestricted upload graduated to unrestricted_upload_probe.py
+#         + safe_unrestricted_upload.py (FN-19)
 
 
 # CWE-113 — CRLF / HTTP response splitting: user input in a response header
@@ -49,14 +46,6 @@ def profile():
 def match():
     pattern = request.args.get("p", "")
     return jsonify({"m": bool(re.match(pattern, "some-long-input-string"))})  # user regex
-
-
-# CWE-434 — Unrestricted file upload: no extension/type validation
-@app.route("/upload", methods=["POST"])
-def upload():
-    f = request.files["file"]
-    f.save("/var/www/uploads/" + f.filename)  # arbitrary filename/type → webshell
-    return "ok"
 
 
 # CWE-532 — Sensitive data in logs: password logged in cleartext

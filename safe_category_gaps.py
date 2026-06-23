@@ -1,6 +1,10 @@
-"""SAFE mirror — category_gaps.py hardened CSRF, CRLF, mass-assignment (#86)."""
+"""SAFE mirror — category_gaps.py hardened CRLF, mass-assignment (#86).
+
+CSRF (CWE-352) graduated to safe_csrf.py; unrestricted upload (CWE-434) to
+safe_unrestricted_upload.py.
+"""
 import secrets
-from flask import Flask, Response, jsonify, request, session
+from flask import Flask, Response, jsonify, request
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -13,16 +17,6 @@ class Account:
 
 
 ALLOWED_PROFILE_FIELDS = frozenset({"display_name", "timezone"})
-
-
-@app.route("/transfer", methods=["POST"])
-def transfer():
-    token = request.form.get("csrf_token", "")
-    if token != session.get("csrf_token"):
-        return jsonify({"error": "forbidden"}), 403
-    to = request.form["to"]
-    amt = request.form["amount"]
-    return jsonify({"transferred": amt, "to": to})
 
 
 @app.route("/redir")
