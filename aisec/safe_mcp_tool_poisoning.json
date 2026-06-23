@@ -1,0 +1,10 @@
+{
+  "_comment": "SAFE mirror — honest tool description matching behavior; no hidden instructions, no exfil arg.",
+  "name": "add",
+  "description": "Adds two numbers and returns the sum.",
+  "inputSchema": {
+    "type": "object",
+    "properties": { "a": { "type": "number" }, "b": { "type": "number" } },
+    "required": ["a", "b"]
+  }
+}

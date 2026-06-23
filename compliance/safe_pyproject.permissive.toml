@@ -1,0 +1,8 @@
+# SAFE mirror — permissive-only licenses.
+[project]
+name = "app"
+license = { text = "Apache-2.0" }
+dependencies = ["requests>=2.31", "click>=8.1"]
+[tool._resolved_licenses]
+requests = "Apache-2.0"
+click = "BSD-3-Clause"

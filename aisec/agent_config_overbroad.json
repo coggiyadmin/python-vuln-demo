@@ -1,0 +1,8 @@
+{
+  "_comment": "Excessive Agency (OWASP LLM06) — over-broad agent/tool scope.",
+  "mcpServers": {
+    "fs": { "command": "mcp-fs", "args": ["--root", "/"], "_issue": "filesystem root = entire host" },
+    "shell": { "command": "mcp-shell", "args": ["--allow", "*"], "_issue": "no command allowlist" }
+  },
+  "oauth": { "scopes": ["*"], "_issue": "wildcard OAuth scope" }
+}

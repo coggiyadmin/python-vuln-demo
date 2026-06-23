@@ -1,0 +1,8 @@
+{
+  "_comment": "SAFE mirror — least-privilege agent/tool scope.",
+  "mcpServers": {
+    "fs": { "command": "mcp-fs", "args": ["--root", "/srv/app/data", "--readonly"] },
+    "shell": { "command": "mcp-shell", "args": ["--allow", "df,uptime,ls"] }
+  },
+  "oauth": { "scopes": ["repo:read", "issues:write"] }
+}

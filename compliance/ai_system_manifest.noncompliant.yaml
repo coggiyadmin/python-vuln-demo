@@ -1,0 +1,9 @@
+# Compliance (EU AI Act) — a high-risk AI system manifest MISSING required obligations.
+system:
+  name: cv-screening-bot
+  purpose: automated candidate screening   # Annex III high-risk (employment)
+  risk_tier: high
+  # MISSING (EU AI Act high-risk obligations):
+  #   - transparency: users not informed they interact with AI (Art. 50)
+  #   - human_oversight: none declared (Art. 14)
+  #   - risk_management / logging / data_governance (Art. 9/12/10)

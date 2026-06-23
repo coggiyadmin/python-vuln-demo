@@ -1,0 +1,10 @@
+# SAFE mirror — high-risk AI system declaring the EU AI Act obligations.
+system:
+  name: cv-screening-bot
+  purpose: automated candidate screening
+  risk_tier: high
+  transparency: { ai_disclosure: true }          # Art. 50
+  human_oversight: { mode: human-in-the-loop }    # Art. 14
+  risk_management: { documented: true }           # Art. 9
+  logging: { enabled: true, retention_days: 180 } # Art. 12
+  data_governance: { bias_tested: true }          # Art. 10
