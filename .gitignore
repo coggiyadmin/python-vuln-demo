@@ -1,0 +1,11 @@
+# Python build artifacts
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# editor / backup
+*.swp
+*.bak
