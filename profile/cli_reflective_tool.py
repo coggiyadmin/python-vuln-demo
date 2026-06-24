@@ -1,4 +1,4 @@
-"""FP-target (elarasu cognium-dev#162, #140) — CLI profile. A developer tool that evals/imports
+"""FP-target (upstream cognium-dev#162, #140) — CLI profile. A developer tool that evals/imports
 a name from argv. Operator-controlled, not a remote sink; project-profile=cli should downgrade."""
 import importlib
 import sys
