@@ -1,11 +1,8 @@
-# custom_wrapper mirror — path_traversal
-import os
-from flask import Flask, request, abort
+from flask import Flask, request
+def company_sanitize(p: str) -> str:
+    return p.replace("..", "")
 app = Flask(__name__)
-ROOT = "/data"
 @app.route("/r")
 def r():
-    p = request.args.get("p", "")
-    full = os.path.realpath(os.path.join(ROOT, p))
-    if not full.startswith(ROOT): abort(403)
-    return open(full).read()
+    p = company_sanitize(request.args.get("p", ""))
+    return open("/data/" + p).read()

@@ -1,8 +1,8 @@
-# hardening mirror — code_injection
-from flask import Flask, request
+from flask import Flask, request, abort
 app = Flask(__name__)
 @app.route("/e")
 def e():
-    x = request.args.get("x", "0")
-    if x not in {"0", "1", "2"}: return "forbidden", 403
-    return str(eval(x))
+    x = request.args.get("x", "")
+    if x not in {"0", "1", "2"}:
+        abort(403)
+    return str(int(x))  # hardening — no eval

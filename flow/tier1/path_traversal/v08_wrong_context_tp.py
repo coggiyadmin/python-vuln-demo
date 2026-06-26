@@ -1,11 +1,7 @@
-# wrong_context mirror — path_traversal
-import os
-from flask import Flask, request, abort
+from html import escape
+from flask import Flask, request
 app = Flask(__name__)
-ROOT = "/data"
 @app.route("/r")
 def r():
-    p = request.args.get("p", "")
-    full = os.path.realpath(os.path.join(ROOT, p))
-    if not full.startswith(ROOT): abort(403)
-    return open(full).read()
+    p = escape(request.args.get("p", ""))  # HTML escape wrong for path
+    return open("/data/" + p).read()  # TP wrong context

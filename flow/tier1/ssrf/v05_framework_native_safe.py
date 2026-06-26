@@ -1,6 +1,5 @@
-# framework_native mirror — ssrf
 import requests
-from flask import Flask, request
+from flask import Flask, request, abort
 from urllib.parse import urlparse
 app = Flask(__name__)
 ALLOWED = {"api.internal.example.com"}
@@ -8,5 +7,5 @@ ALLOWED = {"api.internal.example.com"}
 def f():
     url = request.args.get("url", "")
     if urlparse(url).hostname not in ALLOWED:
-        return "forbidden", 403
-    return requests.get(url).text
+        abort(403)
+    return requests.get(url).text  # framework allowlist host
