@@ -1,8 +1,10 @@
-# custom_wrapper mirror — log_injection
 import logging
 from flask import Flask, request
-app = Flask(__name__); log = logging.getLogger("app")
-@app.route("/login", methods=["POST"])
-def login():
-    user = request.form["user"]
-    log.info("login user=%s", user)  # SAFE — no password in log
+def company_sanitize(x: str) -> str:
+    return x.replace("\n", "")
+app = Flask(__name__)
+log = logging.getLogger("app")
+@app.route("/log")
+def log_user():
+    log.info("user=" + company_sanitize(request.args.get("user", "")))
+    return "ok"

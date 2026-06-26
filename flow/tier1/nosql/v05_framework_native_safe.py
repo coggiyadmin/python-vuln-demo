@@ -1,7 +1,7 @@
-# framework_native mirror — nosql
 from flask import Flask, request, abort
 from pymongo import MongoClient
-app = Flask(__name__); db = MongoClient().app.users
+app = Flask(__name__)
+db = MongoClient().app.users
 @app.route("/login", methods=["POST"])
 def login():
     user = request.json.get("user")

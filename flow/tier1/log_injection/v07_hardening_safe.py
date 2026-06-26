@@ -1,8 +1,11 @@
-# hardening mirror — log_injection
 import logging
-from flask import Flask, request
-app = Flask(__name__); log = logging.getLogger("app")
-@app.route("/login", methods=["POST"])
-def login():
-    user = request.form["user"]
-    log.info("login user=%s", user)  # SAFE — no password in log
+from flask import Flask, request, abort
+app = Flask(__name__)
+log = logging.getLogger("app")
+@app.route("/log")
+def log_user():
+    user = request.args.get("user", "")
+    if len(user) > 64:
+        abort(400)
+    log.info("user=%s", user)
+    return "ok"

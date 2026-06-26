@@ -1,10 +1,9 @@
-# custom_wrapper mirror — nosql
-from flask import Flask, request, abort
+from flask import Flask, request
 from pymongo import MongoClient
-app = Flask(__name__); db = MongoClient().app.users
+def company_sanitize(x): return str(x).replace("$", "")
+app = Flask(__name__)
+db = MongoClient().app.users
 @app.route("/login", methods=["POST"])
 def login():
-    user = request.json.get("user")
-    if not isinstance(user, str):
-        abort(400)
+    user = company_sanitize(request.json.get("user"))
     db.find_one({"user": user, "active": True})

@@ -1,4 +1,3 @@
-# framework_native mirror — open_redirect
 from flask import Flask, request, redirect, abort
 app = Flask(__name__)
 ALLOWED = {"/dashboard", "/profile", "/settings"}

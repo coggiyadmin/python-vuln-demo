@@ -1,7 +1,8 @@
-# custom_wrapper mirror — format_string
 from flask import Flask, request
+def company_sanitize(x: str) -> str:
+    return x.replace("%", "")
 app = Flask(__name__)
 @app.route("/greet")
 def greet():
-    name = request.args.get("name", "guest")
-    return "Hello {}".format(name)
+    name = company_sanitize(request.args.get("name", ""))
+    return "Hello %s" % name

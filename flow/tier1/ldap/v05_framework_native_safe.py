@@ -1,4 +1,3 @@
-# framework_native mirror — ldap
 import re
 import ldap
 from flask import Flask, request, abort

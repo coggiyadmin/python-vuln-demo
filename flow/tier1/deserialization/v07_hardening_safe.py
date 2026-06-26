@@ -1,7 +1,9 @@
-# hardening mirror — deserialization
 import json
-from flask import Flask, request
+from flask import Flask, request, abort
 app = Flask(__name__)
-@app.route("/p", methods=["POST"])
-def p():
-    json.loads(request.get_data())  # SAFE JSON only
+@app.route("/load", methods=["POST"])
+def load():
+    raw = request.get_data()
+    if len(raw) > 65536:
+        abort(413)
+    return str(json.loads(raw))

@@ -1,10 +1,8 @@
-# wrong_context mirror — open_redirect
-from flask import Flask, request, redirect, abort
+import sqlite3
+from flask import Flask, request, redirect
 app = Flask(__name__)
-ALLOWED = {"/dashboard", "/profile", "/settings"}
 @app.route("/go")
 def go():
     nxt = request.args.get("next", "")
-    if nxt not in ALLOWED:
-        abort(403)
+    sqlite3.connect(":memory:").execute("SELECT * FROM u WHERE n='" + nxt + "'")
     return redirect(nxt)

@@ -1,4 +1,3 @@
-# hardening mirror — xpath
 import re
 from flask import Flask, request, abort
 from lxml import etree

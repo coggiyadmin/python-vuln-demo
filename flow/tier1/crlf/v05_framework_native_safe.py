@@ -1,4 +1,3 @@
-# framework_native mirror — crlf
 import re
 from flask import Flask, request, Response, abort
 app = Flask(__name__)

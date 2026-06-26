@@ -1,7 +1,7 @@
-# wrong_context mirror — deserialization
-import json
+import pickle
 from flask import Flask, request
 app = Flask(__name__)
-@app.route("/p", methods=["POST"])
-def p():
-    json.loads(request.get_data())  # SAFE JSON only
+@app.route("/load", methods=["POST"])
+def load():
+  # wrong: pickle on JSON-shaped route
+    return str(pickle.loads(request.get_data()))

@@ -1,10 +1,7 @@
-# custom_wrapper mirror — open_redirect
-from flask import Flask, request, redirect, abort
+from flask import Flask, request, redirect
+def company_sanitize(x: str) -> str:
+    return x.replace("//evil", "")
 app = Flask(__name__)
-ALLOWED = {"/dashboard", "/profile", "/settings"}
 @app.route("/go")
 def go():
-    nxt = request.args.get("next", "")
-    if nxt not in ALLOWED:
-        abort(403)
-    return redirect(nxt)
+    return redirect(company_sanitize(request.args.get("next", "/")))

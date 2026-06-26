@@ -1,4 +1,3 @@
-# framework_native mirror — xxe
 import defusedxml.ElementTree as ET
 from flask import Flask, request
 app = Flask(__name__)
