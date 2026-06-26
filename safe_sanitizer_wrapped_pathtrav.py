@@ -1,5 +1,4 @@
-"""SAFE — Combination #8 custom-wrapper × PATH TRAVERSAL (CWE-22, Python).
-Basename confines path under BASE; expect 0 substantive findings (FP = #79/#102)."""
+"""c08 SAFE — custom wrapper × path traversal (CWE-22). Expect clean."""
 import os
 from flask import Flask, request
 
