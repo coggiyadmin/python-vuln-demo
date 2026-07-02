@@ -1,0 +1,5 @@
+{
+  "_comment": "SPDX license allowlist — TN when deps are declared.",
+  "licenses": ["MIT", "Apache-2.0", "BSD-3-Clause"],
+  "forbidden": ["GPL-3.0-only"]
+}
