@@ -1,16 +1,18 @@
 """IL-5 config-driven boundary — SAFE mirror of interop_toml_dynimport.py.
-The config value selects among a fixed allowlist of already-imported modules; it
-never drives importlib with an arbitrary name. ZERO security findings expected.
+
+Only allowlisted plugin module names from config may be imported. ZERO findings.
 """
-import json
-import logging
+import importlib
+import tomllib
 
-# Pre-imported, vetted plugins — the only modules that can ever be selected.
-_PLUGINS = {"json": json, "logging": logging}
+ALLOWED = frozenset({"plugins.safe_demo", "plugins.metrics"})
 
 
-def load_plugin(name: str):
-    mod = _PLUGINS.get(name)  # allowlist → already-imported module object
-    if mod is None:
-        raise ValueError("unknown plugin")
-    return mod
+def load_plugin(config_path):
+    with open(config_path, "rb") as f:
+        cfg = tomllib.load(f)
+    plugin_name = cfg["plugin"]["module"]
+    if plugin_name not in ALLOWED:
+        raise ValueError("plugin not allowlisted")
+    mod = importlib.import_module(plugin_name)
+    return mod.run()
