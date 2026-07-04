@@ -1,3 +1,4 @@
+# SUPERSEDED by safe_redis_get / safe_ioredis_get (INTAKE-56 N4) — kept for reference.
 """FP-target (upstream cognium-dev#170, py, CRITICAL) — execute_command issues a RESP *protocol*
 verb (GET/SET), never an OS command. Must not be flagged command_injection (CWE-78)."""
 
