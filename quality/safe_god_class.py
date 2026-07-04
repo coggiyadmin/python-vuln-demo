@@ -1,20 +1,8 @@
-"""SAFE mirror — responsibilities split into cohesive single-purpose classes."""
-
-
-class Database:
-    def connect(self): ...
-    def query(self, sql): ...
-
-
-class Mailer:
-    def send(self, to, body): ...
-
-
-class Billing:
-    def charge(self, amount): ...
-    def refund(self, txn): ...
-
-
-class Auth:
-    def login(self, user, pw): ...
-    def issue_token(self, user): ...
+"""SAFE — decomposed order services (refactored smell mirror)."""
+class OrderItems:
+    def __init__(self): self.items = []
+    def add(self, x): self.items.append(x)
+class TaxService:
+    def calc(self, items): return sum(i["p"] for i in items) * 0.08
+class EmailRenderer:
+    def render(self, items): return "<html>" + "".join(i["n"] for i in items) + "</html>"

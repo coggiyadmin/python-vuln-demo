@@ -1,0 +1,7 @@
+{
+  "_comment": "Provenance TP — unsigned wheel artifact, no SLSA attestation.",
+  "artifact": "pkg-1.0.0-py3-none-any.whl",
+  "signed": false,
+  "provenance": null,
+  "slsaLevel": 0
+}

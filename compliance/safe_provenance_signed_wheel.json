@@ -1,0 +1,6 @@
+{
+  "_comment": "SAFE — signed wheel with SLSA provenance.",
+  "artifact": "pkg-1.0.0-py3-none-any.whl",
+  "signed": true,
+  "provenance": { "slsaLevel": 3, "builderId": "https://github.com/org/pkg/.github/workflows/release.yml" }
+}
