@@ -1,0 +1,4 @@
+# TP — pinned vulnerable transitive (CVE-style oracle)
+django==3.2.0
+requests==2.25.0
+pyyaml==5.3.1
