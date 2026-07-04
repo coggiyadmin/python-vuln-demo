@@ -1,3 +1,4 @@
+# SUPERSEDED by real-dep replacement (INTAKE-56/57 N4) — kept for reference.
 """TN — CLI spec object construction, not shell. cognium-dev #167."""
 import argparse
 
