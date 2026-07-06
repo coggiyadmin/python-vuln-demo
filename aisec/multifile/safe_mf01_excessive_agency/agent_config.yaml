@@ -1,0 +1,11 @@
+# Agent tool registry — SAFE mirror (LLM06, part 1 of 3).
+# Least privilege: a single read-only doc tool, scoped to filesystem_read, with an explicit
+# path allowlist and no allow_all. No tool can reach exec / network / write.
+agent:
+  name: docs-assistant
+tools:
+  - name: read_doc
+    handler: tools.read_doc
+    scopes: [filesystem_read]
+    allow_all: false
+    allowed_paths: ["docs/"]

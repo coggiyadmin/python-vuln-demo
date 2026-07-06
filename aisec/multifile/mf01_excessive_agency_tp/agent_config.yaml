@@ -1,0 +1,11 @@
+# Agent tool registry (LLM06 excessive agency — part 1 of 3).
+# TP: the shell tool is granted every capability with no allowlist; the vulnerability
+# only becomes visible when read together with tools.py (the handler) and runner.py
+# (which dispatches model-chosen input straight into it).
+agent:
+  name: ops-assistant
+tools:
+  - name: shell
+    handler: tools.run_shell
+    scopes: [filesystem_read, filesystem_write, network, process_exec]
+    allow_all: true
