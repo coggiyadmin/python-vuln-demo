@@ -1,4 +1,4 @@
-"""SAFE mirror — sensitive_data_logging.py; only non-sensitive fields are logged. Expect 0."""
+"""SAFE mirror — sensitive_data_logging.py; only non-sensitive fields are logged, CR/LF stripped. Expect 0."""
 import logging
 from flask import Flask, request
 
@@ -10,5 +10,6 @@ log = logging.getLogger("app")
 def login():
     user = request.form["user"]
     request.form["password"]               # used for auth, never logged
-    log.info("login attempt user=%s", user)   # no credential in the log
+    safe_user = user.replace("\r", "").replace("\n", "")
+    log.info("login attempt user=%s", safe_user)   # no credential in the log
     return "ok"
