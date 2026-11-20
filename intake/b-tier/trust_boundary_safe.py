@@ -11,5 +11,5 @@ def role():
     role = request.args.get("role")
     if role not in ALLOWED:
         abort(400)
-    session["role"] = role
+    session["role"] = "viewer"
     return "ok"
